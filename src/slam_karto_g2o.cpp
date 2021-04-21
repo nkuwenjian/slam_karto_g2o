@@ -70,6 +70,9 @@ private:
   // basically defines how long a map->odom transform is good for
   ros::Duration transform_tolerance_;
 
+  // range threshold of laser rangefinder
+  double range_threshold_;
+
   // ROS handles
   ros::NodeHandle node_;
   tf::TransformListener tf_;
@@ -127,6 +130,8 @@ SlamKarto::SlamKarto() : got_map_(false), laser_count_(0), transform_thread_(NUL
   if (!private_nh_.getParam("map_update_interval", tmp))
     tmp = 5.0;
   map_update_interval_.fromSec(tmp);
+  if (!private_nh_.getParam("range_threshold", range_threshold_))
+    range_threshold_ = 12.0;
 
   double tmp_tol;
   private_nh_.param("transform_tolerance", tmp_tol, 0.0);
@@ -392,7 +397,7 @@ karto::LaserRangeFinder* SlamKarto::getLaser(const sensor_msgs::LaserScan::Const
     laser->SetMaximumAngle(scan->angle_max);
     laser->SetAngularResolution(scan->angle_increment);
     // TODO: expose this, and many other parameters
-    // laser_->SetRangeThreshold(12.0);
+    laser->SetRangeThreshold(range_threshold_);
 
     // Store this laser device for later
     lasers_[scan->header.frame_id] = laser;
