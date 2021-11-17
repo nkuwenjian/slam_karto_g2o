@@ -301,6 +301,8 @@ SlamKarto::~SlamKarto()
     transform_thread_->join();
     delete transform_thread_;
   }
+  if (tfB_)
+    delete tfB_;
   if (scan_filter_)
     delete scan_filter_;
   if (scan_filter_sub_)
