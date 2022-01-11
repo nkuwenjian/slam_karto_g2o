@@ -7,6 +7,7 @@
 #include "g2o/types/slam2d/types_slam2d.h"
 
 #include <ros/console.h>
+#include <tf/tf.h>
 
 typedef g2o::BlockSolver<g2o::BlockSolverTraits<-1, -1> > SlamBlockSolver;
 
@@ -164,6 +165,7 @@ void G2oSolver::publishGraphVisualization(visualization_msgs::MarkerArray& marra
   m.pose.position.x = 0.0;
   m.pose.position.y = 0.0;
   m.pose.position.z = 0.0;
+  m.pose.orientation = tf::createQuaternionMsgFromYaw(0.0);
   m.scale.x = 0.1;
   m.scale.y = 0.1;
   m.scale.z = 0.1;
@@ -181,6 +183,7 @@ void G2oSolver::publishGraphVisualization(visualization_msgs::MarkerArray& marra
   edge.ns = "karto";
   edge.id = 0;
   edge.type = visualization_msgs::Marker::LINE_STRIP;
+  edge.pose.orientation = tf::createQuaternionMsgFromYaw(0.0);
   edge.scale.x = 0.1;
   edge.scale.y = 0.1;
   edge.scale.z = 0.1;
@@ -197,6 +200,7 @@ void G2oSolver::publishGraphVisualization(visualization_msgs::MarkerArray& marra
   loop_edge.ns = "karto";
   loop_edge.id = 0;
   loop_edge.type = visualization_msgs::Marker::LINE_STRIP;
+  loop_edge.pose.orientation = tf::createQuaternionMsgFromYaw(0.0);
   loop_edge.scale.x = 0.1;
   loop_edge.scale.y = 0.1;
   loop_edge.scale.z = 0.1;
