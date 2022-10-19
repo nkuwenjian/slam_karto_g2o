@@ -27,11 +27,11 @@ find_package(catkin REQUIRED COMPONENTS
 # Eigen
 find_package(Eigen3 REQUIRED)
 
-# g2o  
-find_package(G2O REQUIRED)   
+# g2o
+find_package(G2O REQUIRED)
 
-# suitesparse   
-find_package(SUITESPARSE REQUIRED) 
+# suitesparse
+find_package(SUITESPARSE REQUIRED)
 
 catkin_package()
 
@@ -47,8 +47,8 @@ include_directories(
 add_executable(${PROJECT_NAME} src/slam_karto_g2o.cpp src/g2o_solver.cpp)
 
 target_link_libraries(${PROJECT_NAME}
-  ${catkin_LIBRARIES} 
+  ${catkin_LIBRARIES}
   ${G2O_LIBRARIES}
-  ${SUITESPARSE_LIBRARIES} 
+  ${SUITESPARSE_LIBRARIES}
   Eigen3::Eigen
 )
