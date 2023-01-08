@@ -409,9 +409,9 @@ karto::LaserRangeFinder* SlamKartoG2o::getLaser(
     ident.stamp_ = scan->header.stamp;
     try {
       tf_.transformPose(base_frame_, ident, laser_pose);
-    } catch (tf::TransformException e) {
+    } catch (tf::TransformException& ex) {
       ROS_WARN("Failed to compute laser pose, aborting initialization (%s)",
-               e.what());
+               ex.what());
       return nullptr;
     }
 
@@ -431,8 +431,8 @@ karto::LaserRangeFinder* SlamKartoG2o::getLaser(
     try {
       tf_.transformPoint(scan->header.frame_id, up, up);
       ROS_DEBUG("Z-Axis in sensor frame: %.3f", up.z());
-    } catch (tf::TransformException& e) {
-      ROS_WARN("Unable to determine orientation of laser: %s", e.what());
+    } catch (tf::TransformException& ex) {
+      ROS_WARN("Unable to determine orientation of laser (%s)", ex.what());
       return nullptr;
     }
 
@@ -474,8 +474,8 @@ bool SlamKartoG2o::getOdomPose(karto::Pose2* karto_pose, const ros::Time& t) {
   tf::Stamped<tf::Transform> odom_pose;
   try {
     tf_.transformPose(odom_frame_, ident, odom_pose);
-  } catch (tf::TransformException e) {
-    ROS_WARN("Failed to compute odom pose, skipping scan (%s)", e.what());
+  } catch (tf::TransformException& ex) {
+    ROS_WARN("Failed to compute odom pose, skipping scan (%s)", ex.what());
     return false;
   }
   double yaw = tf::getYaw(odom_pose.getRotation());
@@ -635,8 +635,8 @@ bool SlamKartoG2o::addScan(karto::LaserRangeFinder* laser,
                         tf::Stamped<tf::Pose>(corrected_tf.inverse(),
                                               scan->header.stamp, base_frame_),
                         odom_to_map);
-    } catch (tf::TransformException e) {
-      ROS_ERROR("Transform from base_link to odom failed\n");
+    } catch (tf::TransformException& ex) {
+      ROS_ERROR("Transform from base_link to odom failed (%s)", ex.what());
       odom_to_map.setIdentity();
     }
 
