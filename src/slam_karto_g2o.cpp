@@ -44,6 +44,7 @@
 #include "visualization_msgs/MarkerArray.h"
 
 #include "slam_karto_g2o/g2o_solver.h"
+#include "slam_karto_g2o/util.h"
 
 // compute linear index for given map coords
 #define MAP_IDX(sx, i, j) ((sx) * (j) + (i))
@@ -657,13 +658,13 @@ bool SlamKartoG2o::addScan(karto::LaserRangeFinder* laser,
 
 bool SlamKartoG2o::mapCallback(nav_msgs::GetMap::Request& req,
                                nav_msgs::GetMap::Response& res) {
+  UNUSED(req);
   boost::mutex::scoped_lock lock(map_mutex_);
   if (got_map_ && map_.map.info.width && map_.map.info.height) {
     res = map_;
     return true;
-  } else {
-    return false;
   }
+  return false;
 }
 
 int main(int argc, char** argv) {
