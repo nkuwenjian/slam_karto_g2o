@@ -7,7 +7,7 @@ We are now ready to build and install g2o solver:
 ```
 $ tar zxf g2o-20200410_git.tar.gz
 $ mkdir g2o-bin
-$ cd g2o-bin
+$ cd g2o-bin/
 $ cmake ../g2o-20200410_git
 $ make -j4
 $ sudo make install
@@ -17,16 +17,16 @@ After installing g2o solver, please create and initialize a ROS workspace. We as
 ```
 $ cd ~/catkin_ws/src/
 $ git clone https://github.com/ros-perception/open_karto.git
-$ cd ..
-$ catkin_make
+$ cd ../
+$ catkin_make -DCMAKE_BUILD_TYPE=Release
 ```
 
 After the above preparation, clone and build this package:
 ```
 $ cd ~/catkin_ws/src/
 $ git clone https://github.com/nkuwenjian/slam_karto_g2o.git
-$ cd ..
-$ catkin_make
+$ cd ../
+$ catkin_make -DCMAKE_BUILD_TYPE=Release
 ```
 
 Finally, run the following commands to launch Karto SLAM:
