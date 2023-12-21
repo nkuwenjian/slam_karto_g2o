@@ -509,7 +509,7 @@ void SlamKartoG2o::laserCallback(const sensor_msgs::LaserScan::ConstPtr& scan) {
               odom_pose.GetY(), odom_pose.GetHeading());
 
     visualization_msgs::MarkerArray marray;
-    solver_->publishGraphVisualization(&marray);
+    solver_->PublishGraphVisualization(&marray);
     marker_publisher_.publish(marray);
 
     if (!got_map_ ||
