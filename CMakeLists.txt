@@ -33,22 +33,29 @@ find_package(G2O REQUIRED)
 # suitesparse
 find_package(SUITESPARSE REQUIRED)
 
+find_package(glog REQUIRED)
+
 catkin_package()
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include
+  ${PROJECT_SOURCE_DIR}
   ${catkin_INCLUDE_DIRS}
   ${G2O_INCLUDE_DIR}
   ${SUITESPARSE_INCLUDE_DIRS}
 )
 
-add_executable(${PROJECT_NAME} src/slam_karto_g2o.cpp src/g2o_solver.cpp)
+add_executable(${PROJECT_NAME}
+  slam_karto_g2o/slam_karto_g2o_node.cc
+  slam_karto_g2o/slam_karto_g2o.cc
+  slam_karto_g2o/g2o_solver.cc
+)
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${G2O_LIBRARIES}
   ${SUITESPARSE_LIBRARIES}
   Eigen3::Eigen
+  glog::glog
 )

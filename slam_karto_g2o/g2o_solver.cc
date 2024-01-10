@@ -31,7 +31,9 @@
 
 #include "slam_karto_g2o/g2o_solver.h"
 
+#include <memory>
 #include <unordered_set>
+#include <utility>
 
 #include "g2o/core/block_solver.h"
 #include "g2o/core/factory.h"
@@ -51,6 +53,8 @@ using LinearSolver = g2o::LinearSolverCholmod<BlockSolver::PoseMatrixType>;
 #include "g2o/solvers/csparse/linear_solver_csparse.h"
 using LinearSolver = g2o::LinearSolverCSparse<BlockSolver::PoseMatrixType>;
 #endif
+
+namespace slam_karto_g2o {
 
 G2oSolver::G2oSolver() {
   // Initialize the SparseOptimizer
@@ -281,3 +285,5 @@ void G2oSolver::PublishGraphVisualization(
     }
   }
 }
+
+}  // namespace slam_karto_g2o
