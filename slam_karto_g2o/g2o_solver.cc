@@ -74,7 +74,7 @@ G2oSolver::~G2oSolver() {
 
 void G2oSolver::Clear() {
   // freeing the graph memory
-  ROS_INFO("[g2o] Clearing Optimizer...");
+  LOG(INFO) << "Clearing Optimizer...";
   corrections_.clear();
 }
 
@@ -84,7 +84,7 @@ void G2oSolver::Compute() {
   // Fix the first node in the graph to hold the map in place
   g2o::OptimizableGraph::Vertex* first = optimizer_.vertex(0);
   if (first == nullptr) {
-    ROS_ERROR("[g2o] No Node with ID 0 found!");
+    LOG(ERROR) << "No Node with ID 0 found!";
     return;
   }
   first->setFixed(true);
@@ -93,9 +93,9 @@ void G2oSolver::Compute() {
   optimizer_.initializeOptimization();
   int iter = optimizer_.optimize(40);
   if (iter > 0) {
-    ROS_INFO("[g2o] Optimization finished after %d iterations.", iter);
+    LOG(INFO) << "Optimization finished after " << iter << " iterations.";
   } else {
-    ROS_ERROR("[g2o] Optimization failed, result might be invalid!");
+    LOG(ERROR) << "Optimization failed, result might be invalid!";
     return;
   }
 
@@ -108,7 +108,7 @@ void G2oSolver::Compute() {
       karto::Pose2 pose(estimate[0], estimate[1], estimate[2]);
       corrections_.emplace_back((*n)->id(), pose);
     } else {
-      ROS_ERROR("[g2o] Could not get estimated pose from Optimizer!");
+      LOG(ERROR) << "Could not get estimated pose from Optimizer!";
     }
   }
 }
@@ -120,7 +120,7 @@ void G2oSolver::AddNode(karto::Vertex<karto::LocalizedRangeScan>* vertex) {
       g2o::SE2(odom.GetX(), odom.GetY(), odom.GetHeading()));
   pose_vertex->setId(vertex->GetObject()->GetUniqueId());
   optimizer_.addVertex(pose_vertex);
-  ROS_DEBUG("[g2o] Adding node %d.", vertex->GetObject()->GetUniqueId());
+  VLOG(4) << "Adding node " << vertex->GetObject()->GetUniqueId() << ".";
 }
 
 void G2oSolver::AddConstraint(karto::Edge<karto::LocalizedRangeScan>* edge) {
@@ -133,12 +133,12 @@ void G2oSolver::AddConstraint(karto::Edge<karto::LocalizedRangeScan>* edge) {
   odometry->vertices()[0] = optimizer_.vertex(source_id);
   odometry->vertices()[1] = optimizer_.vertex(target_id);
   if (odometry->vertices()[0] == nullptr) {
-    ROS_ERROR("[g2o] Source vertex with id %d does not exist!", source_id);
+    LOG(ERROR) << "Source vertex with id " << source_id << " does not exist!";
     delete odometry;
     return;
   }
   if (odometry->vertices()[1] == nullptr) {
-    ROS_ERROR("[g2o] Target vertex with id %d does not exist!", target_id);
+    LOG(ERROR) << "Target vertex with id " << target_id << " does not exist!";
     delete odometry;
     return;
   }
@@ -161,7 +161,8 @@ void G2oSolver::AddConstraint(karto::Edge<karto::LocalizedRangeScan>* edge) {
   odometry->setInformation(info);
 
   // Add the constraint to the optimizer
-  ROS_DEBUG("[g2o] Adding Edge from node %d to node %d.", source_id, target_id);
+  VLOG(4) << "Adding edge from node " << source_id << " to node " << target_id
+          << ".";
   optimizer_.addEdge(odometry);
 }
 
