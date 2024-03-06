@@ -1,14 +1,14 @@
 # slam_karto_g2o
-A ROS package for 2-D pose graph SLAM using open karto package for the front-end and g2o solver for the back-end. This package has been tested on Ubuntu 18.04. The version of g2o solver we tested is [Release Version 20200410](https://github.com/RainerKuemmerle/g2o/releases/tag/20200410_git). We start installing g2o solver by installing all the dependencies:
+A ROS package for 2-D pose graph SLAM using open karto package for the front-end and g2o solver for the back-end. This package has been tested on Ubuntu 20.04. The version of g2o solver we tested is [Release Version 20230223](https://github.com/RainerKuemmerle/g2o/releases/tag/20230223_git). We start installing g2o solver by installing all the dependencies:
 ```
 $ sudo apt-get install cmake libeigen3-dev libsuitesparse-dev
 ```
 We are now ready to build and install g2o solver:
 ```
-$ tar zxf g2o-20200410_git.tar.gz
+$ tar zxf g2o-20230223_git.tar.gz
 $ mkdir g2o-bin
 $ cd g2o-bin/
-$ cmake ../g2o-20200410_git
+$ cmake ../g2o-20230223_git
 $ make -j4
 $ sudo make install
 ```
