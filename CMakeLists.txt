@@ -10,6 +10,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -Wextra")
 # Add new CMake Modules
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
+# set(CMAKE_CXX_CLANG_TIDY
+#   clang-tidy;
+#   -header-filter=${PROJECT_SOURCE_DIR}/slam_karto_g2o;
+#   -warnings-as-errors=*;
+# )
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -46,16 +52,20 @@ include_directories(
   ${SUITESPARSE_INCLUDE_DIRS}
 )
 
-add_executable(${PROJECT_NAME}
-  slam_karto_g2o/slam_karto_g2o_node.cc
-  slam_karto_g2o/slam_karto_g2o.cc
-  slam_karto_g2o/g2o_solver.cc
-)
-
-target_link_libraries(${PROJECT_NAME}
+add_library(g2o_solver slam_karto_g2o/g2o_solver.cc)
+target_link_libraries(g2o_solver
   ${catkin_LIBRARIES}
   ${G2O_LIBRARIES}
   ${SUITESPARSE_LIBRARIES}
   Eigen3::Eigen
   glog::glog
 )
+
+add_executable(slam_karto_g2o
+  slam_karto_g2o/slam_karto_g2o.cc
+  slam_karto_g2o/slam_karto_g2o_node.cc
+)
+target_link_libraries(slam_karto_g2o g2o_solver ${catkin_LIBRARIES})
+
+add_executable(slam_karto_g2o_test test/slam_karto_g2o_test.cc)
+target_link_libraries(slam_karto_g2o_test g2o_solver)

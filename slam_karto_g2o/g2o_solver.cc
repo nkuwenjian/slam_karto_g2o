@@ -61,7 +61,7 @@ G2oSolver::G2oSolver() {
   auto linear_solver = std::make_unique<LinearSolver>();
   linear_solver->setBlockOrdering(false);
   auto block_solver = std::make_unique<BlockSolver>(std::move(linear_solver));
-  g2o::OptimizationAlgorithmLevenberg* solver =
+  auto* solver =
       new g2o::OptimizationAlgorithmLevenberg(std::move(block_solver));
 
   optimizer_.setAlgorithm(solver);
@@ -102,11 +102,11 @@ void G2oSolver::Compute() {
   // Write the result so it can be used by the mapper
   const g2o::SparseOptimizer::VertexContainer& nodes =
       optimizer_.activeVertices();
-  for (auto n = nodes.begin(); n != nodes.end(); ++n) {
-    double estimate[3];
-    if ((*n)->getEstimateData(estimate)) {
+  for (const auto* node : nodes) {
+    std::array<double, 3> estimate;
+    if (node->getEstimateData(estimate.data())) {
       karto::Pose2 pose(estimate[0], estimate[1], estimate[2]);
-      corrections_.emplace_back((*n)->id(), pose);
+      corrections_.emplace_back(node->id(), pose);
     } else {
       LOG(ERROR) << "Could not get estimated pose from Optimizer!";
     }
@@ -115,7 +115,7 @@ void G2oSolver::Compute() {
 
 void G2oSolver::AddNode(karto::Vertex<karto::LocalizedRangeScan>* vertex) {
   const karto::Pose2& odom = vertex->GetObject()->GetCorrectedPose();
-  g2o::VertexSE2* pose_vertex = new g2o::VertexSE2();
+  auto* pose_vertex = new g2o::VertexSE2();
   pose_vertex->setEstimate(
       g2o::SE2(odom.GetX(), odom.GetY(), odom.GetHeading()));
   pose_vertex->setId(vertex->GetObject()->GetUniqueId());
@@ -125,7 +125,7 @@ void G2oSolver::AddNode(karto::Vertex<karto::LocalizedRangeScan>* vertex) {
 
 void G2oSolver::AddConstraint(karto::Edge<karto::LocalizedRangeScan>* edge) {
   // Create a new edge
-  g2o::EdgeSE2* odometry = new g2o::EdgeSE2();
+  auto* odometry = new g2o::EdgeSE2();
 
   // Set source and target
   int source_id = edge->GetSource()->GetObject()->GetUniqueId();
@@ -134,17 +134,17 @@ void G2oSolver::AddConstraint(karto::Edge<karto::LocalizedRangeScan>* edge) {
   odometry->vertices()[1] = optimizer_.vertex(target_id);
   if (odometry->vertices()[0] == nullptr) {
     LOG(ERROR) << "Source vertex with id " << source_id << " does not exist!";
-    delete odometry;
+    free(odometry);
     return;
   }
   if (odometry->vertices()[1] == nullptr) {
     LOG(ERROR) << "Target vertex with id " << target_id << " does not exist!";
-    delete odometry;
+    free(odometry);
     return;
   }
 
   // Set the measurement (odometry distance between vertices)
-  karto::LinkInfo* link_info = dynamic_cast<karto::LinkInfo*>(edge->GetLabel());
+  auto* link_info = dynamic_cast<karto::LinkInfo*>(edge->GetLabel());
   karto::Pose2 diff = link_info->GetPoseDifference();
   g2o::SE2 measurement(diff.GetX(), diff.GetY(), diff.GetHeading());
   odometry->setMeasurement(measurement);
@@ -237,18 +237,19 @@ void G2oSolver::PublishGraphVisualization(
   std::unordered_set<int> vertex_ids;
   // HyperGraph Edges
   const auto& edges = optimizer_.edges();
-  for (auto edge_it = edges.begin(); edge_it != edges.end(); ++edge_it) {
+  for (const auto* edge_it : edges) {
     // Is it a unary edge? Need to skip or else die a bad death
-    if ((*edge_it)->vertices().size() < 2) {
+    if (edge_it->vertices().size() < 2) {
       continue;
     }
 
-    g2o::VertexSE2* v1 =
-        dynamic_cast<g2o::VertexSE2*>((*edge_it)->vertices()[0]);
-    g2o::VertexSE2* v2 =
-        dynamic_cast<g2o::VertexSE2*>((*edge_it)->vertices()[1]);
+    const auto* v1 =
+        dynamic_cast<const g2o::VertexSE2*>(edge_it->vertices()[0]);
+    const auto* v2 =
+        dynamic_cast<const g2o::VertexSE2*>(edge_it->vertices()[1]);
 
-    geometry_msgs::Point p1, p2;
+    geometry_msgs::Point p1;
+    geometry_msgs::Point p2;
     p1.x = v1->estimate()[0];
     p1.y = v1->estimate()[1];
     p2.x = v2->estimate()[0];
