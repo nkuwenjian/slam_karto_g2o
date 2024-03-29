@@ -31,11 +31,11 @@
  * Author: Jian Wen (nkuwenjian@gmail.com)
  *****************************************************************************/
 
-#include <map>
 #include <memory>
 #include <mutex>  // NOLINT
 #include <string>
 #include <thread>  // NOLINT
+#include <unordered_map>
 #include <vector>
 
 #include "glog/logging.h"
@@ -98,6 +98,8 @@ class SlamKartoG2o {
   std::string map_frame_;
   std::string odom_frame_;
   std::string base_frame_;
+  std::string map_topic_;
+  std::string scan_topic_;
   double map_update_interval_;
 
   // Range threshold of laser range finder.
@@ -115,7 +117,7 @@ class SlamKartoG2o {
   std::unique_ptr<karto::Mapper> mapper_ = nullptr;
   std::unique_ptr<karto::Dataset> dataset_ = nullptr;
   std::unique_ptr<G2oSolver> solver_ = nullptr;
-  std::map<std::string, const karto::LaserRangeFinder*> lasers_;
+  std::unordered_map<std::string, const karto::LaserRangeFinder*> lasers_;
 
   // Internal state.
   bool got_map_ = false;

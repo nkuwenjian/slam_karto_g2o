@@ -38,18 +38,6 @@ namespace slam_karto_g2o {
 void SlamKartoG2o::Initialize() {
   map_to_odom_.setIdentity();
 
-  // Set up advertisements and subscriptions
-  tf_broadcaster_ = std::make_unique<tf::TransformBroadcaster>();
-  sst_ = nh_.advertise<nav_msgs::OccupancyGrid>("map", 1, true);
-  sstm_ = nh_.advertise<nav_msgs::MapMetaData>("map_metadata", 1, true);
-  ss_ = nh_.advertiseService("dynamic_map", &SlamKartoG2o::MapCallback, this);
-  scan_filter_sub_ =
-      std::make_unique<message_filters::Subscriber<sensor_msgs::LaserScan>>(
-          nh_, "base_scan", 5);
-  scan_filter_ = std::make_unique<tf::MessageFilter<sensor_msgs::LaserScan>>(
-      *scan_filter_sub_, tf_, odom_frame_, 5);
-  scan_filter_->registerCallback([this](auto&& PH1) { LaserCallback(PH1); });
-
   // Initialize Karto structures.
   mapper_ = std::make_unique<karto::Mapper>();
   dataset_ = std::make_unique<karto::Dataset>();
@@ -62,6 +50,18 @@ void SlamKartoG2o::Initialize() {
   ros::NodeHandle private_nh("~");
   double transform_publish_period;
   LoadRosParamFromNodeHandle(private_nh, &transform_publish_period);
+
+  // Set up advertisements and subscriptions
+  tf_broadcaster_ = std::make_unique<tf::TransformBroadcaster>();
+  sst_ = nh_.advertise<nav_msgs::OccupancyGrid>(map_topic_, 1, true);
+  sstm_ = nh_.advertise<nav_msgs::MapMetaData>("map_metadata", 1, true);
+  ss_ = nh_.advertiseService("dynamic_map", &SlamKartoG2o::MapCallback, this);
+  scan_filter_sub_ =
+      std::make_unique<message_filters::Subscriber<sensor_msgs::LaserScan>>(
+          nh_, scan_topic_, 5);
+  scan_filter_ = std::make_unique<tf::MessageFilter<sensor_msgs::LaserScan>>(
+      *scan_filter_sub_, tf_, odom_frame_, 5);
+  scan_filter_->registerCallback([this](auto&& PH1) { LaserCallback(PH1); });
 
   // Create a thread to periodically publish the latest map->odom transform; it
   // needs to go out regularly, uninterrupted by potentially long periods of
@@ -86,6 +86,8 @@ void SlamKartoG2o::LoadRosParamFromNodeHandle(
   nh.param("map_frame", map_frame_, std::string("map"));
   nh.param("odom_frame", odom_frame_, std::string("odom"));
   nh.param("base_frame", base_frame_, std::string("base_link"));
+  nh.param("map_topic", map_topic_, std::string("map"));
+  nh.param("scan_topic", scan_topic_, std::string("scan"));
   nh.param("map_update_interval", map_update_interval_, 5.0);
   nh.param("range_threshold", range_threshold_, 12.0);
   nh.param("transform_tolerance", transform_tolerance_, 0.0);
@@ -299,7 +301,7 @@ const karto::LaserRangeFinder* SlamKartoG2o::GetLaser(
   CHECK_NOTNULL(scan);
 
   // Check whether we know about this laser yet.
-  if (lasers_.find(scan->header.frame_id) == lasers_.end()) {
+  if (lasers_.find(scan->header.frame_id) != lasers_.end()) {
     return lasers_[scan->header.frame_id];
   }
 
@@ -338,7 +340,7 @@ const karto::LaserRangeFinder* SlamKartoG2o::GetLaser(
   laser->SetRangeThreshold(range_threshold_);
 
   // Store this laser device for later.
-  lasers_[scan->header.frame_id] = laser;
+  lasers_.emplace(scan->header.frame_id, laser);
 
   // Add it to the dataset.
   dataset_->Add(laser);
