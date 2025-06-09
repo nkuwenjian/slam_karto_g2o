@@ -42,7 +42,7 @@
 #include "g2o/core/optimization_algorithm_levenberg.h"
 #include "g2o/solvers/csparse/linear_solver_csparse.h"
 #include "g2o/types/slam2d/types_slam2d.h"
-#include "ros/console.h"
+#include "glog/logging.h"
 #include "tf/tf.h"
 
 namespace slam_karto_g2o {
